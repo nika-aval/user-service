@@ -1,6 +1,6 @@
 package pdp.user_service.service;
 
-import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pdp.user_service.dto.CustomerDetailsDto;
@@ -10,17 +10,20 @@ import pdp.user_service.repository.CustomerRepository;
 
 import java.util.List;
 
-import static pdp.user_service.mapper.CustomerMapper.*;
-
 @Service
-@RequiredArgsConstructor
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final ModelMapper mapper;
+
+    public CustomerService(CustomerRepository customerRepository) {
+        this.customerRepository = customerRepository;
+        mapper = new ModelMapper();
+    }
 
     public CustomerDto registerCustomer(CustomerDto customerDto) {
-        Customer customer = toEntity(customerDto);
-        return toCustomerDto(customerRepository.save(customer));
+        Customer customer = mapper.map(customerDto, Customer.class);
+        return mapper.map(customerRepository.save(customer), CustomerDto.class);
     }
 
     @Transactional
@@ -28,36 +31,39 @@ public class CustomerService {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException(String.format("Customer with id %s not found!", customerId)));
 
-        if (customerDto.firstName() != null || !customerDto.firstName().isBlank()){
-            customer.setFirstName(customerDto.firstName());
+        if (customerDto.getFirstName() != null || !customerDto.getFirstName().isBlank()) {
+            customer.setFirstName(customerDto.getFirstName());
         }
 
-        if (customerDto.lastName() != null || !customerDto.lastName().isBlank()){
-            customer.setLastName(customerDto.lastName());
+        if (customerDto.getLastName() != null || !customerDto.getLastName().isBlank()) {
+            customer.setLastName(customerDto.getLastName());
         }
 
-        if (customerDto.email() != null || !customerDto.email().isBlank()){
-            customer.setEmail(customerDto.email());
+        if (customerDto.getEmail() != null || !customerDto.getEmail().isBlank()) {
+            customer.setEmail(customerDto.getEmail());
         }
 
-        if (customerDto.phone() != null || !customerDto.phone().isBlank()){
-            customer.setPhone(customerDto.phone());
+        if (customerDto.getPhone() != null || !customerDto.getPhone().isBlank()) {
+            customer.setPhone(customerDto.getPhone());
         }
 
-        return toCustomerDto(customer);
+        return mapper.map(customer, CustomerDto.class);
     }
 
     public CustomerDetailsDto getCustomerDetails(Long customerId) {
-        return toCustomerDetailsDto(customerRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException(String.format("Customer with id %s not found!", customerId))));
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException(String.format("Customer with id %s not found!", customerId)));
+        return mapper.map(customer, CustomerDetailsDto.class);
     }
 
     public CustomerDto getCustomer(Long customerId) {
-        return toCustomerDto(customerRepository.findById(customerId)
-                .orElseThrow(() -> new RuntimeException(String.format("Customer with id %s not found!", customerId))));
+        return mapper.map(customerRepository.findById(customerId)
+                .orElseThrow(() -> new RuntimeException(String.format("Customer with id %s not found!", customerId))), CustomerDto.class);
     }
 
     public List<CustomerDto> getAllCustomers() {
-        return toCustomerDtos(customerRepository.findAll());
+        return customerRepository.findAll().stream()
+                .map(customer -> mapper.map(customer, CustomerDto.class))
+                .toList();
     }
 }

@@ -7,7 +7,6 @@ services:
       POSTGRES_PASSWORD: mypassword
     ports:
       - "5432:5432"
-
   zookeeper:
     container_name: zookeeper
     image: wurstmeister/zookeeper:latest

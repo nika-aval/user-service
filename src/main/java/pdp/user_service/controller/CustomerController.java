@@ -19,13 +19,13 @@ public class CustomerController {
 
     private final CustomerService customerService;
 
-    @PostMapping("/register")
+    @PostMapping
     @Operation(summary = "Register a new customer", description = "Creates a new customer with the provided details")
     public CustomerDto registerCustomer(@RequestBody @Parameter(description = "Customer details") CustomerDto customerDto) {
         return customerService.registerCustomer(customerDto);
     }
 
-    @PutMapping("/update/{customerId}")
+    @PutMapping("/{customerId}")
     @Operation(summary = "Update an existing customer", description = "Updates a customer with the provided details")
     public CustomerDto updateCustomer(@PathVariable @Parameter(description = "Customer ID") Long customerId,
                                       @RequestBody @Parameter(description = "Customer details") CustomerDto customerDto) {
@@ -38,7 +38,7 @@ public class CustomerController {
         return customerService.getCustomerDetails(customerId);
     }
 
-    @GetMapping("/all")
+    @GetMapping
     @Operation(summary = "Get all customers with details", description = "Retrieves all customers from database")
     public List<CustomerDto> getAllCustomers() {
         return customerService.getAllCustomers();

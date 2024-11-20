@@ -1,6 +1,6 @@
 package pdp.user_service.service;
 
-import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pdp.user_service.dto.BankAccountDto;
@@ -12,26 +12,32 @@ import pdp.user_service.repository.CustomerRepository;
 import java.math.BigDecimal;
 import java.util.List;
 
-import static pdp.user_service.mapper.BankAccountMapper.*;
-
 @Service
-@RequiredArgsConstructor
 public class BankAccountService {
+
     private final BankAccountRepository bankAccountRepository;
     private final CustomerRepository customerRepository;
+    private final ModelMapper mapper;
+
+    public BankAccountService(BankAccountRepository bankAccountRepository, CustomerRepository customerRepository) {
+        this.bankAccountRepository = bankAccountRepository;
+        this.customerRepository = customerRepository;
+        mapper = new ModelMapper();
+    }
 
     @Transactional
     public BankAccountDto openNewBankAccount(Long customerId, BankAccountDto bankAccountDto) {
         Customer customer = customerRepository.findById(customerId)
                 .orElseThrow(() -> new RuntimeException(String.format("Customer with id %s not found", customerId)));
-
-        BankAccount account = bankAccountRepository.save(toEntity(bankAccountDto));
+        BankAccount account = bankAccountRepository.save(mapper.map(bankAccountDto, BankAccount.class));
         account.setCustomer(customer);
-        return toDto(account);
+        return mapper.map(account, BankAccountDto.class);
     }
 
     public List<BankAccountDto> getBankAccountsByCustomerId(Long customerId) {
-        return toDtos(bankAccountRepository.findAllByCustomerId(customerId));
+        return bankAccountRepository.findAllByCustomerId(customerId).stream()
+                .map(bankAccount -> mapper.map(bankAccount, BankAccountDto.class))
+                .toList();
     }
 
     @Transactional
@@ -39,7 +45,7 @@ public class BankAccountService {
         BankAccount account = bankAccountRepository.findByIban(iban)
                 .orElseThrow(() -> new RuntimeException(String.format("IBAN %s not found", iban)));
         account.setBalance(account.getBalance().add(amount));
-        return toDto(account);
+        return mapper.map(account, BankAccountDto.class);
     }
 
     @Transactional
@@ -51,7 +57,7 @@ public class BankAccountService {
             throw new RuntimeException("Insufficient balance!");
         }
         account.setBalance(account.getBalance().subtract(amount));
-        return toDto(account);
+        return mapper.map(account, BankAccountDto.class);
     }
 
     @Transactional

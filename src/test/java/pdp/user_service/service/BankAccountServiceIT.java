@@ -4,9 +4,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import pdp.user_service.dto.BankAccountDto;
 import pdp.user_service.dto.CustomerDto;
 import pdp.user_service.repository.BankAccountRepository;
@@ -18,22 +19,23 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-@DataJpaTest
-@AutoConfigureTestDatabase(connection = EmbeddedDatabaseConnection.H2)
+@SpringBootTest
+@ActiveProfiles("test")
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 class BankAccountServiceIT {
 
     @Autowired
     private CustomerRepository customerRepository;
     @Autowired
     private BankAccountRepository bankAccountRepository;
+    @Autowired
     private CustomerService customerService;
+    @Autowired
     private BankAccountService bankAccountService;
 
     @BeforeEach
     @AfterEach
     void setUp() {
-        customerService = new CustomerService(customerRepository);
-        bankAccountService = new BankAccountService(bankAccountRepository, customerRepository);
         bankAccountRepository.deleteAll();
         customerRepository.deleteAll();
     }
@@ -41,7 +43,7 @@ class BankAccountServiceIT {
     @Test
     void shouldOpenNewBankAccount() {
         // GIVEN
-        Long customerId = customerService.registerCustomer(generateCustomerDto()).id();
+        Long customerId = customerService.registerCustomer(generateCustomerDto()).getId();
         BankAccountDto expectedBankAccount = generateBankAccountDto();
 
         // WHEN
@@ -55,9 +57,10 @@ class BankAccountServiceIT {
     }
 
     @Test
+    @Transactional
     void shouldGetBankAccountsByCustomerId() {
         // GIVEN
-        Long customerId = customerService.registerCustomer(generateCustomerDto()).id();
+        Long customerId = customerService.registerCustomer(generateCustomerDto()).getId();
         BankAccountDto bankAccountDto = bankAccountService.openNewBankAccount(customerId, generateBankAccountDto());
 
         // WHEN
@@ -72,37 +75,40 @@ class BankAccountServiceIT {
     }
 
     @Test
+    @Transactional
     void shouldDeposit() {
         // GIVEN
-        Long customerId = customerService.registerCustomer(generateCustomerDto()).id();
+        Long customerId = customerService.registerCustomer(generateCustomerDto()).getId();
         bankAccountService.openNewBankAccount(customerId, generateBankAccountDto());
 
         // WHEN
         BankAccountDto accountWithBalance = bankAccountService.deposit("GE25BG0011223344", BigDecimal.valueOf(2550));
 
         // THEN
-        assertThat(accountWithBalance.balance())
+        assertThat(accountWithBalance.getBalance())
                 .isEqualTo(BigDecimal.valueOf(12550));
     }
 
     @Test
+    @Transactional
     void shouldWithdraw() {
         // GIVEN
-        Long customerId = customerService.registerCustomer(generateCustomerDto()).id();
+        Long customerId = customerService.registerCustomer(generateCustomerDto()).getId();
         bankAccountService.openNewBankAccount(customerId, generateBankAccountDto());
 
         // WHEN
         BankAccountDto accountWithBalance = bankAccountService.withdraw("GE25BG0011223344", BigDecimal.valueOf(2000));
 
         // THEN
-        assertThat(accountWithBalance.balance())
+        assertThat(accountWithBalance.getBalance())
                 .isEqualTo(BigDecimal.valueOf(8000));
     }
 
     @Test
+    @Transactional
     void shouldTransfer() {
         // GIVEN
-        Long customerId = customerService.registerCustomer(generateCustomerDto()).id();
+        Long customerId = customerService.registerCustomer(generateCustomerDto()).getId();
         bankAccountService.openNewBankAccount(customerId, generateBankAccountDto());
         bankAccountService.openNewBankAccount(customerId, new BankAccountDto(null, "GE25BG5566778899", BigDecimal.ZERO));
 
@@ -113,16 +119,16 @@ class BankAccountServiceIT {
         // THEN
         assertThat(bankAccountsByCustomerId.size())
                 .isEqualTo(2);
-        assertThat(bankAccountsByCustomerId.get(0).balance())
+        assertThat(bankAccountsByCustomerId.get(0).getBalance())
                 .isEqualTo(BigDecimal.valueOf(6500));
-        assertThat(bankAccountsByCustomerId.get(1).balance())
+        assertThat(bankAccountsByCustomerId.get(1).getBalance())
                 .isEqualTo(BigDecimal.valueOf(3500));
     }
 
     @Test
     void shouldThrowExceptionWhenNotEnoughBalanceWhileTransferring() {
         // GIVEN
-        Long customerId = customerService.registerCustomer(generateCustomerDto()).id();
+        Long customerId = customerService.registerCustomer(generateCustomerDto()).getId();
         bankAccountService.openNewBankAccount(customerId, generateBankAccountDto());
         bankAccountService.openNewBankAccount(customerId, new BankAccountDto(null, "GE25BG5566778899", BigDecimal.ZERO));
 
