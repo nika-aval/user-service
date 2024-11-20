@@ -1,11 +1,14 @@
 package pdp.user_service.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.math.BigDecimal;
 
-@Data
+@Getter
+@Setter
 @Entity
 public class BankAccount {
     @Id
@@ -15,7 +18,7 @@ public class BankAccount {
     private String iban;
     private BigDecimal balance = BigDecimal.ZERO;
     private boolean isActive = true;
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn
+    @JsonIgnore
+    @ManyToOne
     private Customer customer;
 }

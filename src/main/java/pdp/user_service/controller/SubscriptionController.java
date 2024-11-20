@@ -20,23 +20,23 @@ public class SubscriptionController {
     private final SubscriptionProviderClient subscriptionProviderClient;
     private final SubscriptionProducerService subscriptionProducerService;
 
-    @GetMapping("/all-subscription-providers")
+    @GetMapping
     @Operation(summary = "Get all subscription providers", description = "Retrieves a list of all available subscription providers")
     public List<SubscriptionProviderDto> getAllSubscriptionProviders() {
         return subscriptionProviderClient.findAllSubscriptionProviders();
     }
 
-    @PostMapping("/subscribe")
+    @PostMapping
     @Operation(summary = "Subscribe to a provider", description = "Subscribes a subscription for a specified customer and provider")
     public String subscribeProvider(@Parameter(description = "Customer ID") Long customerId,
                                     @Parameter(description = "Subscription Provider ID") Long subscriptionProviderId) {
         return subscriptionProducerService.subscribeUtility(customerId, subscriptionProviderId);
     }
 
-    @DeleteMapping("/cancel-subscription")
+    @DeleteMapping("/{customerId}/{subscriptionProviderId}")
     @Operation(summary = "Cancel a subscription", description = "Cancels a subscription for a specified customer and provider")
-    public String cancelSubscription(@Parameter(description = "Customer ID") Long customerId,
-                                     @Parameter(description = "Subscription Provider ID") Long subscriptionProviderId) {
+    public String cancelSubscription(@PathVariable Long customerId,
+                                     @PathVariable Long subscriptionProviderId) {
         return subscriptionProducerService.cancelSubscription(customerId, subscriptionProviderId);
     }
 

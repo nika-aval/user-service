@@ -1,8 +1,8 @@
 package pdp.user_service.controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import pdp.user_service.dto.BankAccountDto;
@@ -13,13 +13,13 @@ import java.util.List;
 
 @Tag(name = "Bank Accounts", description = "APIs for managing bank accounts")
 @RestController
-@RequestMapping("/bank")
 @RequiredArgsConstructor
+@RequestMapping("/bank")
 public class BankAccountController {
 
     private final BankAccountService bankAccountService;
 
-    @PostMapping("/open-new-account/{customerId}")
+    @PostMapping("/{customerId}")
     @Operation(summary = "Open a new bank account", description = "Creates a new bank account for a customer")
     public BankAccountDto openNewBankAccount(
             @PathVariable @Parameter(description = "Customer ID") Long customerId,
@@ -27,7 +27,7 @@ public class BankAccountController {
         return bankAccountService.openNewBankAccount(customerId, bankAccountDto);
     }
 
-    @GetMapping("/get-all-bank-accounts/{customerId}")
+    @GetMapping("/{customerId}")
     @Operation(summary = "Get all bank accounts for a customer", description = "Retrieves a list of bank accounts for a customer")
     public List<BankAccountDto> getBankAccountsByCustomerId(@PathVariable @Parameter(description = "Customer ID") Long customerId) {
         return bankAccountService.getBankAccountsByCustomerId(customerId);

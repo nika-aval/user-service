@@ -29,7 +29,7 @@ public class SubscriptionProducerService {
     public String subscribeUtility(Long customerId, Long subscriptionProviderId) {
         CustomerDto customer = validateEntitiesAndReturnCustomer(customerId, subscriptionProviderId);
 
-        sendMessage(KafkaTopicConfig.SUBSCRIBE_UTILITY, new SubscriptionDto(subscriptionProviderId, customer));
+        kafkaTemplate.send(KafkaTopicConfig.SUBSCRIBE_UTILITY, new SubscriptionDto(subscriptionProviderId, customer));
 
         return "Subscribed Successfully!";
     }
@@ -37,7 +37,7 @@ public class SubscriptionProducerService {
     public String cancelSubscription(Long customerId, Long subscriptionProviderId) {
         CustomerDto customer = validateEntitiesAndReturnCustomer(customerId, subscriptionProviderId);
 
-        sendMessage(KafkaTopicConfig.CANCEL_SUBSCRIPTION, new SubscriptionDto(subscriptionProviderId, customer));
+        kafkaTemplate.send(KafkaTopicConfig.CANCEL_SUBSCRIPTION, new SubscriptionDto(subscriptionProviderId, customer));
 
         return "Subscription cancelled Successfully!";
     }
@@ -54,10 +54,6 @@ public class SubscriptionProducerService {
             throw new RuntimeException("SubscriptionProvider id " + subscriptionProviderId + " does not exist");
         }
         return customer;
-    }
-
-    private void sendMessage(String topic, SubscriptionDto subscriptionDto) {
-        kafkaTemplate.send(topic, subscriptionDto);
     }
 
 }

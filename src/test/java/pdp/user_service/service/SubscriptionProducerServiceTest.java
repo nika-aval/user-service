@@ -1,6 +1,5 @@
 package pdp.user_service.service;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
@@ -27,13 +26,8 @@ public class SubscriptionProducerServiceTest {
     private SubscriptionProviderClient subscriptionProviderClient;
     @Mock
     private KafkaTemplate<Object, Object> kafkaTemplate;
-
+    @InjectMocks
     private SubscriptionProducerService subscriptionProducerService;
-
-    @BeforeEach
-    void setUp() {
-        subscriptionProducerService = new SubscriptionProducerService(customerService, subscriptionProviderClient, kafkaTemplate);
-    }
 
     @Test
     void shouldSubscribeUtilitySuccessfully() {

@@ -1,12 +1,14 @@
 package pdp.user_service.model;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
+@Getter
+@Setter
 @Entity
 public class Customer {
     @Id
@@ -16,8 +18,6 @@ public class Customer {
     private String lastName;
     private String email;
     private String phone;
-
-    @OneToMany(mappedBy = "customer", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "customer")
     private Set<BankAccount> bankAccounts = new HashSet<>();
-
 }
